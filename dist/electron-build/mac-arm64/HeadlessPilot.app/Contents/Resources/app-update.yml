@@ -1,0 +1,4 @@
+owner: phxmg
+repo: headless-ng
+provider: github
+updaterCacheDirName: headless-ng-updater

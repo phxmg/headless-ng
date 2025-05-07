@@ -45,16 +45,9 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Task files
-tasks.json
-tasks/
+
 
 # Temp scripts
 temp_scripts/
 
-# Large files
-*.dmg
-*.app
-*.exe
-*.deb
-*.rpm
+
