@@ -15,6 +15,11 @@ mac:
   category: public.app-category.developer-tools
   target:
     - dmg
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: entitlements.mac.plist
+  entitlementsInherit: entitlements.mac.plist
+  identity: null
 win:
   target:
     - nsis

@@ -11,6 +11,8 @@
     "build:react": "craco build",
     "build": "npm run tsc && npm run build:react && electron-builder build --mac --win --linux",
     "build:mac": "npm run tsc && npm run build:react && electron-builder build --mac",
+    "build:mac:signed": "npm run tsc && npm run build:react && electron-builder build --mac -c.mac.identity=null",
+    "build:mac:self-signed": "npm run tsc && npm run build:react && electron-builder build --mac --publish=never",
     "build:win": "npm run tsc && npm run build:react && electron-builder build --win",
     "build:linux": "npm run tsc && npm run build:react && electron-builder build --linux",
     "test": "craco test",
@@ -31,7 +33,12 @@
       "category": "public.app-category.developer-tools",
       "target": [
         "dmg"
-      ]
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "identity": null
     },
     "win": {
       "target": [
@@ -94,6 +101,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@craco/craco": "^7.1.0",
+    "@electron/notarize": "^3.0.1",
     "@types/node": "^22.15.14",
     "@types/node-cron": "^3.0.11",
     "@types/pdfkit": "^0.13.9",
@@ -104,6 +112,7 @@
     "cross-env": "^7.0.3",
     "electron": "^23.1.1",
     "electron-builder": "^23.6.0",
+    "electron-notarize": "^1.2.2",
     "eslint": "^8.34.0",
     "eslint-plugin-react": "^7.32.2",
     "html-webpack-plugin": "^5.5.0",
