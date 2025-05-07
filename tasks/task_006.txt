@@ -1,0 +1,80 @@
+# Task ID: 6
+# Title: Implement element detection and analysis
+# Status: done
+# Dependencies: 3
+# Priority: medium
+# Description: Create a system to analyze web pages and identify interactive elements for automation
+# Details:
+1. Create an ElementAnalyzer class:
+   ```javascript
+   class ElementAnalyzer {
+     constructor(page) {
+       this.page = page;
+     }
+     
+     async analyzeCurrentPage() {
+       return await this.page.evaluate(() => {
+         const elements = [];
+         
+         // Find form elements
+         const forms = document.querySelectorAll('form');
+         forms.forEach(form => {
+           elements.push({
+             type: 'form',
+             selector: this.generateSelector(form),
+             inputs: Array.from(form.querySelectorAll('input, select, textarea')).map(input => ({
+               type: input.type || input.tagName.toLowerCase(),
+               name: input.name,
+               id: input.id,
+               selector: this.generateSelector(input)
+             }))
+           });
+         });
+         
+         // Find buttons and links
+         const clickables = document.querySelectorAll('button, a, [role="button"]');
+         clickables.forEach(el => {
+           elements.push({
+             type: 'clickable',
+             text: el.textContent.trim(),
+             selector: this.generateSelector(el)
+           });
+         });
+         
+         // Detect login forms using heuristics
+         const possibleLoginForms = Array.from(forms).filter(form => {
+           const inputs = form.querySelectorAll('input');
+           const hasPasswordField = Array.from(inputs).some(input => input.type === 'password');
+           const hasTextField = Array.from(inputs).some(input => input.type === 'text' || input.type === 'email');
+           return hasPasswordField && hasTextField;
+         });
+         
+         return {
+           elements,
+           possibleLoginForms: possibleLoginForms.map(form => this.generateSelector(form))
+         };
+       });
+     }
+     
+     generateSelector(element) {
+       // Implementation of selector generation strategies
+     }
+   }
+   ```
+2. Implement heuristics for identifying:
+   - Login forms
+   - Registration forms
+   - Search inputs
+   - Navigation elements
+3. Create a visual overlay system to highlight detected elements
+4. Implement suggestion generation for common automation targets
+5. Add ranking algorithm for element importance
+6. Create UI components to display detected elements
+
+# Test Strategy:
+1. Test element detection on various websites
+2. Verify login form detection accuracy
+3. Test selector generation for different element types
+4. Validate visual overlay functionality
+5. Test with dynamic websites that load content asynchronously
+6. Measure detection performance and accuracy

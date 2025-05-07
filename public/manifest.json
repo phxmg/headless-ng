@@ -1,0 +1,9 @@
+{
+  "name": "HeadlessPilot",
+  "short_name": "HeadlessPilot",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Headless browser automation tool.",
+  "icons": []
+} 

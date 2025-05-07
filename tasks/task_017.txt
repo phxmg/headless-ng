@@ -1,0 +1,84 @@
+# Task ID: 17
+# Title: Fix Main Process Navigation Handlers for React Webview Integration
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Update the IPC handlers in main.js to replace browserView-based navigation with a proper communication channel between the main process and the new React webview component.
+# Details:
+This task involves refactoring the main process navigation handlers to work with the new React webview component implemented in Task #16. Key implementation details include:
+
+1. Remove all browserView-specific code from main.js navigation handlers
+2. Implement new IPC (Inter-Process Communication) channels specifically for the React webview component
+3. Create message handlers for navigation events (back, forward, refresh, stop, navigate to URL)
+4. Implement proper error handling for navigation failures
+5. Set up event listeners for navigation state changes (loading, complete, error)
+6. Create a secure communication protocol between main and renderer processes
+7. Implement proper URL validation and sanitization before navigation
+8. Add navigation history management compatible with the React webview
+9. Ensure proper handling of external URLs (opening in default browser)
+10. Document the new IPC API for future reference and maintenance
+
+The implementation should follow Electron's security best practices, particularly regarding IPC communication between processes. All navigation handlers should be thoroughly tested to ensure they work correctly with the new React webview component.
+
+# Test Strategy:
+Testing for this task should include:
+
+1. Unit tests:
+   - Test each IPC handler function in isolation
+   - Mock the webview component responses
+   - Verify correct behavior for valid and invalid navigation requests
+   - Test error handling paths
+
+2. Integration tests:
+   - Test the communication between main process and renderer process
+   - Verify navigation commands (back, forward, refresh) work correctly
+   - Test URL loading with various types of URLs (internal, external, malformed)
+   - Verify navigation history is maintained correctly
+
+3. End-to-end tests:
+   - Create automated tests that navigate through the application using the new handlers
+   - Test complex navigation scenarios (multiple redirects, authentication pages)
+   - Verify that navigation state is correctly reflected in the UI
+
+4. Security tests:
+   - Verify that malicious URLs are properly handled
+   - Test that the IPC channel cannot be exploited for remote code execution
+   - Ensure proper origin checking for navigation requests
+
+5. Performance tests:
+   - Measure and compare navigation performance before and after the changes
+   - Ensure there are no memory leaks during extended navigation sessions
+
+All tests should pass before considering this task complete. Documentation of the new API should be reviewed and approved by the team lead.
+
+# Subtasks:
+## 1. Remove browserView code and implement basic IPC channels [done]
+### Dependencies: None
+### Description: Remove all browserView-specific code from main.js and establish new IPC channels for React webview communication.
+### Details:
+Identify and remove all browserView-related code in main.js. Create new IPC channels using Electron's ipcMain module for communication with the React webview component. Define channel names for navigation actions (back, forward, refresh, navigate, stop) and implement basic handler structure. Follow Electron's contextIsolation and security best practices when setting up these channels.
+
+## 2. Implement navigation event handlers with error handling [done]
+### Dependencies: 17.1
+### Description: Create handlers for navigation events with proper error handling and URL validation.
+### Details:
+Implement handlers for each navigation action (back, forward, refresh, stop, navigate to URL). Add comprehensive error handling for navigation failures. Implement URL validation and sanitization before navigation to prevent security issues. For external URLs, implement logic to open them in the default browser using shell.openExternal(). Each handler should return appropriate success/error responses to the renderer process.
+
+## 3. Set up navigation state change listeners [done]
+### Dependencies: 17.1
+### Description: Implement event listeners for navigation state changes and relay them to the React component.
+### Details:
+Create event listeners for navigation state changes (loading, complete, error). Set up IPC channels to communicate these state changes back to the React webview component. Implement a throttling mechanism to prevent excessive IPC communication during rapid state changes. Ensure all state change events include relevant metadata (URL, error details if applicable, loading progress).
+
+## 4. Implement navigation history management [done]
+### Dependencies: 17.2
+### Description: Create a system to manage navigation history compatible with the React webview.
+### Details:
+Implement a navigation history stack in the main process. Create methods to add, remove, and navigate through history entries. Add IPC handlers to expose history management functionality to the React component. Implement methods to query current history state (can go back/forward). Ensure history entries contain necessary metadata (URL, title, timestamp).
+
+## 5. Document IPC API and finalize secure communication protocol [done]
+### Dependencies: 17.1, 17.2, 17.3, 17.4
+### Description: Document the new IPC API and ensure all communication follows security best practices.
+### Details:
+Create comprehensive documentation for all IPC channels and message formats. Review all IPC implementations to ensure they follow Electron's security best practices. Implement input validation for all incoming IPC messages. Create a secure communication protocol that prevents unauthorized access to navigation functions. Add comments in the code explaining security considerations. Perform final integration testing with the React webview component from Task #16.
+

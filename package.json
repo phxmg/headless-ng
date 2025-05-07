@@ -1,0 +1,130 @@
+{
+  "name": "headless-ng",
+  "version": "0.1.0",
+  "description": "Headless browser automation tool with interactive recording and replay capabilities",
+  "main": "public/electron.js",
+  "scripts": {
+    "tsc": "tsc",
+    "start": "npm run tsc && electron .",
+    "dev": "concurrently \"cross-env BROWSER=none npm run start:react\" \"wait-on http://localhost:3000 && tsc -w\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "start:react": "craco start --port 3000",
+    "build:react": "craco build",
+    "build": "npm run tsc && npm run build:react && electron-builder build --mac --win --linux",
+    "build:mac": "npm run tsc && npm run build:react && electron-builder build --mac",
+    "build:win": "npm run tsc && npm run build:react && electron-builder build --win",
+    "build:linux": "npm run tsc && npm run build:react && electron-builder build --linux",
+    "test": "craco test",
+    "eject": "react-scripts eject"
+  },
+  "build": {
+    "appId": "com.headlesspilot.app",
+    "productName": "HeadlessPilot",
+    "directories": {
+      "output": "dist/electron-build"
+    },
+    "files": [
+      "build/**/*",
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phxmg/headless-ng.git"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "puppeteer",
+    "automation",
+    "headless",
+    "browser",
+    "testing",
+    "recording",
+    "screenshot"
+  ],
+  "author": "HeadlessPilot Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/phxmg/headless-ng/issues"
+  },
+  "homepage": ".",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "electron-is-dev": "^2.0.0",
+    "global": "^4.4.0",
+    "keytar": "^7.9.0",
+    "node-cron": "^3.0.3",
+    "pdfkit": "^0.17.1",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "process": "^0.11.10",
+    "puppeteer": "^19.11.1",
+    "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.8.1",
+    "react-split-pane": "^0.1.92",
+    "redux": "^4.2.1",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^3.1.0",
+    "styled-components": "^5.3.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "@craco/craco": "^7.1.0",
+    "@types/node": "^22.15.14",
+    "@types/node-cron": "^3.0.11",
+    "@types/pdfkit": "^0.13.9",
+    "@types/react": "^19.1.3",
+    "@types/react-dom": "^19.1.3",
+    "babel-loader": "^9.1.2",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "electron": "^23.1.1",
+    "electron-builder": "^23.6.0",
+    "eslint": "^8.34.0",
+    "eslint-plugin-react": "^7.32.2",
+    "html-webpack-plugin": "^5.5.0",
+    "path-browserify": "^1.0.1",
+    "react-scripts": "^5.0.1",
+    "typescript": "^5.8.3",
+    "wait-on": "^7.0.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

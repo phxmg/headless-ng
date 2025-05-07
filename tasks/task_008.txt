@@ -1,0 +1,87 @@
+# Task ID: 8
+# Title: Develop sequence storage and management
+# Status: done
+# Dependencies: 4, 5
+# Priority: medium
+# Description: Create a system to save, load, and manage automation sequences
+# Details:
+1. Create a SequenceManager class:
+   ```javascript
+   const fs = require('fs');
+   const path = require('path');
+   
+   class SequenceManager {
+     constructor(baseDir = path.join(app.getPath('userData'), 'sequences')) {
+       this.baseDir = baseDir;
+       this.ensureDirectoryExists(this.baseDir);
+     }
+     
+     ensureDirectoryExists(dir) {
+       if (!fs.existsSync(dir)) {
+         fs.mkdirSync(dir, { recursive: true });
+       }
+     }
+     
+     saveSequence(sequence) {
+       if (!sequence.name) {
+         throw new Error('Sequence must have a name');
+       }
+       
+       const filename = `${sequence.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+       const filepath = path.join(this.baseDir, filename);
+       
+       const sequenceData = {
+         ...sequence,
+         lastModified: new Date().toISOString()
+       };
+       
+       fs.writeFileSync(filepath, JSON.stringify(sequenceData, null, 2));
+       return filepath;
+     }
+     
+     loadSequence(name) {
+       const filename = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+       const filepath = path.join(this.baseDir, filename);
+       
+       if (!fs.existsSync(filepath)) {
+         throw new Error(`Sequence '${name}' not found`);
+       }
+       
+       return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+     }
+     
+     getAllSequences() {
+       return fs.readdirSync(this.baseDir)
+         .filter(file => file.endsWith('.json'))
+         .map(file => JSON.parse(fs.readFileSync(path.join(this.baseDir, file), 'utf8')));
+     }
+     
+     deleteSequence(name) {
+       const filename = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+       const filepath = path.join(this.baseDir, filename);
+       
+       if (!fs.existsSync(filepath)) {
+         throw new Error(`Sequence '${name}' not found`);
+       }
+       
+       fs.unlinkSync(filepath);
+     }
+   }
+   ```
+2. Implement sequence validation functionality
+3. Create UI components for:
+   - Sequence listing
+   - Sequence editing
+   - Sequence creation
+   - Import/export
+4. Add sequence versioning support
+5. Implement sequence categorization and tagging
+6. Add search and filter capabilities for sequences
+
+# Test Strategy:
+1. Test saving and loading sequences
+2. Verify sequence validation functionality
+3. Test sequence listing and management
+4. Validate import/export functionality
+5. Test with large sequences containing many actions
+6. Verify sequence versioning and history

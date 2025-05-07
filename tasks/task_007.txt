@@ -1,0 +1,96 @@
+# Task ID: 7
+# Title: Add screenshot and result management
+# Status: done
+# Dependencies: 5
+# Priority: medium
+# Description: Implement functionality to capture, store, and manage screenshots and automation results
+# Details:
+1. Create a ResultManager class:
+   ```javascript
+   const fs = require('fs');
+   const path = require('path');
+   
+   class ResultManager {
+     constructor(baseDir = path.join(app.getPath('userData'), 'results')) {
+       this.baseDir = baseDir;
+       this.ensureDirectoryExists(this.baseDir);
+     }
+     
+     ensureDirectoryExists(dir) {
+       if (!fs.existsSync(dir)) {
+         fs.mkdirSync(dir, { recursive: true });
+       }
+     }
+     
+     createRunDirectory(sequenceName) {
+       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+       const runDir = path.join(this.baseDir, sequenceName, timestamp);
+       this.ensureDirectoryExists(runDir);
+       return runDir;
+     }
+     
+     async saveScreenshot(page, runDir, name) {
+       const filename = `${name}.png`;
+       const filepath = path.join(runDir, filename);
+       await page.screenshot({ path: filepath, fullPage: true });
+       return filepath;
+     }
+     
+     saveResults(runDir, results) {
+       const filepath = path.join(runDir, 'results.json');
+       fs.writeFileSync(filepath, JSON.stringify(results, null, 2));
+       return filepath;
+     }
+     
+     getRunHistory(sequenceName) {
+       const sequenceDir = path.join(this.baseDir, sequenceName);
+       if (!fs.existsSync(sequenceDir)) return [];
+       
+       return fs.readdirSync(sequenceDir)
+         .filter(dir => fs.statSync(path.join(sequenceDir, dir)).isDirectory())
+         .map(dir => ({
+           timestamp: dir,
+           path: path.join(sequenceDir, dir),
+           results: this.loadResults(path.join(sequenceDir, dir, 'results.json'))
+         }));
+     }
+     
+     loadResults(filepath) {
+       if (!fs.existsSync(filepath)) return null;
+       return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+     }
+   }
+   ```
+2. Implement screenshot comparison functionality:
+   ```javascript
+   async compareScreenshots(image1Path, image2Path) {
+     const { PNG } = require('pngjs');
+     const pixelmatch = require('pixelmatch');
+     
+     const img1 = PNG.sync.read(fs.readFileSync(image1Path));
+     const img2 = PNG.sync.read(fs.readFileSync(image2Path));
+     
+     const { width, height } = img1;
+     const diff = new PNG({ width, height });
+     
+     const numDiffPixels = pixelmatch(img1.data, img2.data, diff.data, width, height, { threshold: 0.1 });
+     
+     return {
+       diffCount: numDiffPixels,
+       diffPercentage: (numDiffPixels / (width * height)) * 100,
+       diffImageBuffer: PNG.sync.write(diff)
+     };
+   }
+   ```
+3. Create UI components for viewing results and screenshots
+4. Implement image export functionality (PNG, PDF)
+5. Add result filtering and search capabilities
+6. Implement run comparison views
+
+# Test Strategy:
+1. Test screenshot capture on various websites
+2. Verify screenshot storage and retrieval
+3. Test image comparison functionality
+4. Validate result JSON structure and content
+5. Test export functionality for different formats
+6. Verify run history management and retrieval

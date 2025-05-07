@@ -1,0 +1,57 @@
+# Task ID: 3
+# Title: Add Puppeteer integration for headless control
+# Status: done
+# Dependencies: 2
+# Priority: high
+# Description: Integrate Puppeteer to enable headless browser automation capabilities
+# Details:
+1. Install Puppeteer:
+   ```
+   npm install puppeteer
+   ```
+2. Create a BrowserAutomation service class:
+   ```javascript
+   const puppeteer = require('puppeteer');
+   
+   class BrowserAutomation {
+     constructor() {
+       this.browser = null;
+       this.page = null;
+     }
+     
+     async initialize() {
+       this.browser = await puppeteer.launch({
+         headless: true,
+         args: ['--no-sandbox', '--disable-setuid-sandbox']
+       });
+       this.page = await this.browser.newPage();
+       return this;
+     }
+     
+     async navigate(url) {
+       await this.page.goto(url, { waitUntil: 'networkidle2' });
+     }
+     
+     async close() {
+       if (this.browser) {
+         await this.browser.close();
+       }
+     }
+   }
+   ```
+3. Implement basic automation methods:
+   - click(selector)
+   - type(selector, text)
+   - select(selector, value)
+   - waitForElement(selector)
+   - takeScreenshot(path)
+4. Create a bridge between Electron UI and Puppeteer automation
+5. Add error handling and retry mechanisms
+
+# Test Strategy:
+1. Test headless browser initialization
+2. Verify navigation to various websites
+3. Test basic automation methods with sample websites
+4. Validate screenshot capture functionality
+5. Test error handling with intentionally broken selectors
+6. Measure performance and resource usage

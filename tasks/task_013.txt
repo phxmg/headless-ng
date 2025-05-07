@@ -1,0 +1,201 @@
+# Task ID: 13
+# Title: Create report generation and export functionality
+# Status: done
+# Dependencies: 7, 8
+# Priority: low
+# Description: Implement comprehensive reporting and export capabilities for automation results
+# Details:
+1. Create a ReportGenerator class:
+   ```javascript
+   const fs = require('fs');
+   const path = require('path');
+   const PDFDocument = require('pdfkit');
+   
+   class ReportGenerator {
+     constructor(resultManager) {
+       this.resultManager = resultManager;
+     }
+     
+     async generateHTMLReport(runDir) {
+       const results = this.resultManager.loadResults(path.join(runDir, 'results.json'));
+       if (!results) throw new Error('Results not found');
+       
+       const screenshots = fs.readdirSync(runDir)
+         .filter(file => file.endsWith('.png'))
+         .map(file => ({
+           name: file.replace('.png', ''),
+           path: path.join(runDir, file)
+         }));
+       
+       let html = `
+         <!DOCTYPE html>
+         <html>
+         <head>
+           <title>Automation Report - ${new Date().toLocaleString()}</title>
+           <style>
+             body { font-family: Arial, sans-serif; margin: 20px; }
+             .header { background: #f5f5f5; padding: 10px; margin-bottom: 20px; }
+             .success { color: green; }
+             .error { color: red; }
+             .screenshot { max-width: 800px; margin: 10px 0; border: 1px solid #ddd; }
+             .action { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+           </style>
+         </head>
+         <body>
+           <div class="header">
+             <h1>Automation Report</h1>
+             <p>Generated: ${new Date().toLocaleString()}</p>
+             <p>Sequence: ${results.sequenceName || 'Unknown'}</p>
+           </div>
+           
+           <h2>Summary</h2>
+           <p>Total Actions: ${results.length}</p>
+           <p>Successful: ${results.filter(r => r.type === 'success').length}</p>
+           <p>Failed: ${results.filter(r => r.type === 'error').length}</p>
+           
+           <h2>Actions</h2>
+       `;
+       
+       results.forEach((result, index) => {
+         html += `
+           <div class="action">
+             <h3>${index + 1}. ${result.action.type} ${result.type === 'success' ? '✓' : '✗'}</h3>
+             <p class="${result.type}">Status: ${result.type}</p>
+             <p>Timestamp: ${result.timestamp}</p>
+             <p>Details: ${JSON.stringify(result.action)}</p>
+             ${result.type === 'error' ? `<p class="error">Error: ${result.error}</p>` : ''}
+           </div>
+         `;
+       });
+       
+       html += '<h2>Screenshots</h2>';
+       
+       screenshots.forEach(screenshot => {
+         // Convert image to base64 for embedding
+         const imgData = fs.readFileSync(screenshot.path);
+         const base64Image = Buffer.from(imgData).toString('base64');
+         
+         html += `
+           <div>
+             <h3>${screenshot.name}</h3>
+             <img class="screenshot" src="data:image/png;base64,${base64Image}" />
+           </div>
+         `;
+       });
+       
+       html += `
+         </body>
+         </html>
+       `;
+       
+       const reportPath = path.join(runDir, 'report.html');
+       fs.writeFileSync(reportPath, html);
+       return reportPath;
+     }
+     
+     async generatePDFReport(runDir) {
+       const results = this.resultManager.loadResults(path.join(runDir, 'results.json'));
+       if (!results) throw new Error('Results not found');
+       
+       const screenshots = fs.readdirSync(runDir)
+         .filter(file => file.endsWith('.png'))
+         .map(file => ({
+           name: file.replace('.png', ''),
+           path: path.join(runDir, file)
+         }));
+       
+       const pdfPath = path.join(runDir, 'report.pdf');
+       const doc = new PDFDocument({ margin: 50 });
+       
+       doc.pipe(fs.createWriteStream(pdfPath));
+       
+       // Add report header
+       doc.fontSize(25).text('Automation Report', { align: 'center' });
+       doc.moveDown();
+       doc.fontSize(12).text(`Generated: ${new Date().toLocaleString()}`);
+       doc.text(`Sequence: ${results.sequenceName || 'Unknown'}`);
+       doc.moveDown();
+       
+       // Add summary
+       doc.fontSize(16).text('Summary');
+       doc.fontSize(12).text(`Total Actions: ${results.length}`);
+       doc.text(`Successful: ${results.filter(r => r.type === 'success').length}`);
+       doc.text(`Failed: ${results.filter(r => r.type === 'error').length}`);
+       doc.moveDown();
+       
+       // Add actions
+       doc.fontSize(16).text('Actions');
+       doc.moveDown();
+       
+       results.forEach((result, index) => {
+         doc.fontSize(14).text(`${index + 1}. ${result.action.type} ${result.type === 'success' ? '✓' : '✗'}`);
+         doc.fontSize(12).text(`Status: ${result.type}`, {
+           color: result.type === 'success' ? 'green' : 'red'
+         });
+         doc.text(`Timestamp: ${result.timestamp}`);
+         doc.text(`Details: ${JSON.stringify(result.action)}`);
+         
+         if (result.type === 'error') {
+           doc.text(`Error: ${result.error}`, { color: 'red' });
+         }
+         
+         doc.moveDown();
+       });
+       
+       // Add screenshots
+       doc.addPage();
+       doc.fontSize(16).text('Screenshots', { align: 'center' });
+       doc.moveDown();
+       
+       for (const screenshot of screenshots) {
+         doc.fontSize(14).text(screenshot.name);
+         doc.image(screenshot.path, { width: 500 });
+         doc.moveDown();
+       }
+       
+       doc.end();
+       return pdfPath;
+     }
+     
+     async generateCSVReport(runDir) {
+       const results = this.resultManager.loadResults(path.join(runDir, 'results.json'));
+       if (!results) throw new Error('Results not found');
+       
+       let csv = 'Index,Action Type,Status,Timestamp,Details,Error\n';
+       
+       results.forEach((result, index) => {
+         const row = [
+           index + 1,
+           result.action.type,
+           result.type,
+           result.timestamp,
+           JSON.stringify(result.action).replace(/"/g, '""'),
+           result.error || ''
+         ];
+         
+         csv += row.map(field => `"${field}"`).join(',') + '\n';
+       });
+       
+       const csvPath = path.join(runDir, 'report.csv');
+       fs.writeFileSync(csvPath, csv);
+       return csvPath;
+     }
+   }
+   ```
+2. Implement export functionality for different formats:
+   - HTML reports
+   - PDF reports
+   - CSV data export
+   - JSON data export
+3. Create UI components for report generation and viewing
+4. Add report customization options
+5. Implement batch report generation
+6. Add email/notification capabilities for reports
+
+# Test Strategy:
+1. Test HTML report generation and verify content
+2. Validate PDF report generation and formatting
+3. Test CSV export functionality
+4. Verify report customization options
+5. Test with various result sets including errors
+6. Validate email/notification functionality
